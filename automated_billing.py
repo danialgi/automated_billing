@@ -42,8 +42,8 @@ partner_option=['Zucca',
     'Mejorcare Sdn Bhd',
     'Is Distributions Sdn Bhd',
     'Grow Beyond Consulting Sdn Bhd',
-    #'Dou Dou Trading',
-    #'Jacko Agriculture Resources Sdn. Bhd.',
+    'Dou Dou Trading',
+    'Jacko Agriculture Resources Sdn. Bhd.',
     #'Beast Kingdom (Malaysia) Sdn Bhd',
     'OBA Creative Sdn Bhd',
     'Nanjing Quka Pet Products Co Ltd',
@@ -323,9 +323,9 @@ if partner == 'Healthy World Lifestyle Sdn Bhd (Ogawa)':
     total=data[37].sum()
     st.write("Handling: RM", total)
 
-    data['return_rm'] = data[37].map({2.5: 3, 4: 8, 7: 10})
-    total_return=data['return_rm'].sum()
-    st.write("Return: RM", total_return)
+    #data['return_rm'] = data[37].map({2.5: 3, 4: 8, 7: 10})
+    #total_return=data['return_rm'].sum()
+    #st.write("Return: RM", total_return)
 
 if partner == 'Leapro Fashion':
     status=["Canceled","Canceled Reversal", "Refunded", "Returned", "Pending"]
@@ -419,4 +419,28 @@ if partner == 'Grow Beyond Consulting Sdn Bhd':
 
     order_column='Order No.'
     weight_column='Box Weight'
+    cal_weight(data, order_column, weight_column)
+
+if partner == 'Dou Dou Trading':
+    status=[]
+    data = exclude_status(False, data, status)
+
+    data = matching(data)
+
+    #cancel_status=['Returned']
+    #data2=data[data['Order Status'].isin(cancel_status)]
+    #data = matching(data)
+
+    order_column='Order No.'
+    weight_column='Order Qty'
+    cal_weight(data, order_column, weight_column)
+
+if partner == 'Jacko Agriculture Resources Sdn. Bhd.':
+    status=[]
+    data = exclude_status(False, data, status)
+
+    data = matching(data)
+
+    order_column='Order No.'
+    weight_column='Order Qty'
     cal_weight(data, order_column, weight_column)
