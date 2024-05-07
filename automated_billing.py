@@ -40,8 +40,8 @@ partner_option=['Zucca',
     'Healthy World Lifestyle Sdn Bhd (Ogawa)',
     #'Akademi Sempoa & Mental -Aritmetik Ucmas',
     'Mejorcare Sdn Bhd',
-    #'Is Distributions Sdn Bhd',
-    #'Grow Beyond Consulting Sdn Bhd',
+    'Is Distributions Sdn Bhd',
+    'Grow Beyond Consulting Sdn Bhd',
     #'Dou Dou Trading',
     #'Jacko Agriculture Resources Sdn. Bhd.',
     #'Beast Kingdom (Malaysia) Sdn Bhd',
@@ -82,25 +82,18 @@ def exclude_status(exclude, df, status):
     return df
 
 def matching(df_cart):
-    wms_file = st.file_uploader("WMS file",type=['xls'])
-    df_wms = pd.read_html(wms_file)
-    df_wms = df_wms[0]
+    file_type=['xls','csv']
+    select_file_type=st.selectbox("File type", file_type)
+    if select_file_type == 'xls':
+        wms_file = st.file_uploader("WMS file",type=['xls'])
+        df_wms = pd.read_html(wms_file)
+        df_wms = df_wms[0]
+    if select_file_type == 'csv':
+        wms_file = st.file_uploader("WMS file",type=['csv'])
+        df_wms = pd.read_csv(wms_file)
+
     df_wms = df_wms[df_wms['Status'] == "COMPLETED"]
-#############################
-    id_oc = df_cart [['Order ID']].copy()
-    id_oc = id_oc.drop_duplicates(keep='first')
 
-    id_wms = df_wms [['Order No.']].copy()
-    id_wms = id_wms.drop_duplicates(keep='first')
-
-    only_oc = id_oc[~id_oc['Order ID'].isin(id_wms['Order No.'])]
-    only_oc=only_oc.reset_index()
-    only_oc = only_oc.drop(['index'], axis=1)
-
-    only_wms = id_wms[~id_wms['Order No.'].isin(id_oc['Order ID'])]
-    only_wms=only_wms.reset_index()
-    only_wms = only_wms.drop(['index'], axis=1)
-################################
     order_id = df_cart [['Order ID']].copy()
     #order_id = pd.concat([df_cart['Order ID'], df_wms['Order No.']])
     order_id = order_id.drop_duplicates(keep='first')
@@ -170,33 +163,31 @@ def formula_match(df, column_df, sheet, column_formula):
     #df_concat_unique
     return df_concat
 
-def cal_weight(df):
-    df["Weight"]=df[21]*df[37]
+def cal_weight(df, order_column, weight_column):
 
-    sum_weights_by_product = df.groupby(12, as_index=False).agg({'Weight': 'sum'})
-    df = pd.merge(df, sum_weights_by_product, on=12, suffixes=('', '_sum'))
-    df = df.drop_duplicates(subset=[12], keep='first')
+    sum_weights_by_product = df.groupby(order_column, as_index=False).agg({weight_column: 'sum'})
+    df = pd.merge(df, sum_weights_by_product, on=order_column, suffixes=('', '_sum'))
+    df = df.drop_duplicates(subset=[order_column], keep='first')
 
-    df_0kg = df[df['Weight_sum'].between(0, 2.999)]
+    df_0kg = df[df[f'{weight_column}_sum'].between(0, 2.999)]
     name="0-3kg"
-    column=12
-    df_0kg_rows=on_demand(df_0kg, name, column)
+    df_0kg_rows=on_demand(df_0kg, name, order_column)
 
-    df_3kg = df[df['Weight_sum'].between(3, 4.999)]
+    df_3kg = df[df[f'{weight_column}_sum'].between(3, 4.999)]
     name="3-5kg"
-    df_3kg_rows=on_demand(df_3kg, name, column)
+    df_3kg_rows=on_demand(df_3kg, name, order_column)
 
-    df_5kg = df[df['Weight_sum'].between(5, 10.999)]
+    df_5kg = df[df[f'{weight_column}_sum'].between(5, 9.999)]
     name="5-10kg"
-    df_5kg_rows=on_demand(df_5kg, name, column)
+    df_5kg_rows=on_demand(df_5kg, name, order_column)
 
-    df_10kg = df[df['Weight_sum'].between(10, 14.999)]
+    df_10kg = df[df[f'{weight_column}_sum'].between(10, 14.999)]
     name="10-15kg"
-    df_10kg_rows=on_demand(df_10kg, name, column)
+    df_10kg_rows=on_demand(df_10kg, name, order_column)
 
-    df_15kg = df[df['Weight_sum']>=15]
+    df_15kg = df[df[f'{weight_column}_sum']>=15]
     name="above 15kg"
-    df_15kg_rows=on_demand(df_15kg, name, column)
+    df_15kg_rows=on_demand(df_15kg, name, order_column)
 
 
 data = oc_data()
@@ -247,7 +238,9 @@ if partner == 'NekoTech':
     total=revenue(data, column, percent)
 
 if partner == 'Kimma Sdn Bhd':
-    data = exclude_status(False, data, status=[])
+    status=[]
+    data = exclude_status(False, data, status)
+
     data = matching(data)
 
     column_df='Item Description'
@@ -269,10 +262,15 @@ if partner == 'Kimma Sdn Bhd':
     name="Single"
     single_rows=on_demand(single, name, column)
 
-    cal_weight(data)
+    data["Weight"]=data[21]*data[37]
+    order_column=12
+    weight_column='Weight'
+    cal_weight(data, order_column, weight_column)
 
 if partner == 'Kimma Sdn Bhd - outlet':
-    data = exclude_status(False, data, status=[])
+    status=[]
+    data = exclude_status(False, data, status)
+
     data = matching(data)
 
     column_df='Item Description'
@@ -280,7 +278,10 @@ if partner == 'Kimma Sdn Bhd - outlet':
     column_formula='Log'
     data = formula_match(data, column_df, sheet, column_formula)
 
-    cal_weight(data)
+    data["Weight"]=data[21]*data[37]
+    order_column=12
+    weight_column='Weight'
+    cal_weight(data, order_column, weight_column)
 
 if partner =='OBA Creative Sdn Bhd' or partner =='Nanjing Quka Pet Products Co Ltd' or partner =='Homelection (M) Sdn Bhd' or partner =='CommBax Sdn Bhd':
     status=[]
@@ -391,3 +392,31 @@ if partner == 'South Ocean':
     percent2=3
     total2=revenue(data2, column2, percent2)
     st.markdown("#")
+
+if partner == 'Is Distributions Sdn Bhd':
+    status=[]
+    data = exclude_status(False, data, status)
+
+    data = matching(data)
+
+    order_column='Order No.'
+    weight_column='Box Weight'
+    cal_weight(data, order_column, weight_column)
+
+if partner == 'Grow Beyond Consulting Sdn Bhd':
+    status=[]
+    data = exclude_status(False, data, status)
+
+    data = matching(data)
+
+    selfcollect = data[data['Courier'] == 'Self collect']
+    name="Self Collect"
+    column='Order No.'
+    rows1=on_demand(selfcollect, name, column)
+
+    selfcollect_INDEX=selfcollect.index
+    data.drop(selfcollect_INDEX, inplace=True)
+
+    order_column='Order No.'
+    weight_column='Box Weight'
+    cal_weight(data, order_column, weight_column)
