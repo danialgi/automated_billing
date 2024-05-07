@@ -142,7 +142,7 @@ def on_demand(df, name, column):
 
 def formula_match(df, column_df, sheet, column_formula):
     formula_file = 'Formula.xlsx'
-    df_formula = pd.read_excel(formula_file, sheet_name=sheet, engine='openpyxl'))
+    df_formula = pd.read_excel(formula_file, sheet_name=sheet, engine='openpyxl')
     df_formula = df_formula.drop_duplicates(subset=[column_formula], keep='first')
 
     df_rows=len(df)
