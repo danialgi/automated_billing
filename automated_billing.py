@@ -159,7 +159,6 @@ def formula_match(df, column_df, sheet, column_formula):
     df_formula_i  = df_formula_i .drop(['level_0','level_1'], axis=1)
 
     df_concat= pd.concat([df, df_formula_i], axis=1, ignore_index=True)
-    df_concat
 
     df_empty = df_concat[df_concat[36].isnull()]
     df_empty  = df_empty [[17]].copy()
