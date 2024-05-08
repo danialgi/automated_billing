@@ -158,8 +158,8 @@ def formula_match(df, column_df, sheet, column_formula):
 
     df_empty = df_concat[df_concat[df_concat_columns-1].isnull()]
     if column_df == 'Model':
-        df_empty  = df_empty [[23,24]].copy()
-        df_empty.rename(columns={23: 'Item Code', 24: 'Item Name'}, inplace=True)
+        df_empty  = df_empty [[6,7]].copy()
+        df_empty.rename(columns={6: 'Item Name', 7: 'Item Code'}, inplace=True)
     else:
         df_empty  = df_empty [[16,17]].copy()
         df_empty.rename(columns={16: 'Item Code', 17: 'Item Name'}, inplace=True)
