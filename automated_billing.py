@@ -93,6 +93,7 @@ def matching(df_cart):
         df_wms = pd.read_csv(wms_file)
 
     df_wms = df_wms[df_wms['Status'] == "COMPLETED"]
+    df_wms
 
     order_id = df_cart [['Order ID']].copy()
     #order_id = pd.concat([df_cart['Order ID'], df_wms['Order No.']])
@@ -143,9 +144,13 @@ def formula_match(df, column_df, sheet, column_formula):
 
     for i in range(df_rows):
         cell_value = df.at[i, column_df]
-        df_formula_i[i] = df_formula[df_formula[column_formula] == cell_value]
+        if cell_value.isdecimal():
+            df_formula_i[i] = df_formula[df_formula[column_formula]==int(cell_value)]
+        else:
+            df_formula_i[i] = df_formula[df_formula[column_formula]==(cell_value)]
+        #df_formula_i[i] = df_formula[df_formula[column_formula]==(cell_value)]
         if df_formula_i[i].empty:
-            df_formula_i[i] = pd.DataFrame({column_df: [None]})
+            df_formula_i[i] = pd.DataFrame({column_formula: [None]})
 
     df_formula_i = pd.concat(df_formula_i)
     df_formula_i .reset_index(inplace=True)
@@ -154,7 +159,8 @@ def formula_match(df, column_df, sheet, column_formula):
     df_concat= pd.concat([df, df_formula_i], axis=1, ignore_index=True)
 
     df_empty = df_concat[df_concat[36].isnull()]
-    df_empty  = df_empty [[17]].copy()
+    df_empty  = df_empty [[16,17]].copy()
+    df_empty.rename(columns={16: 'Item Code', 17: 'Item Name'}, inplace=True)
     df_empty = df_empty.drop_duplicates(keep='first')
     st.write("*MISSING FORMULA*", df_empty)
     st.markdown("##")
@@ -226,8 +232,6 @@ if partner == 'Galaxy Sports' or partner == 'VICTOR SPORTS':
     data2 = data2[data2['Category'].str.contains('Badminton Rackets')]
     cashback=data2['Quantity'].sum()
     st.write("Badminton Rackets:", cashback)
-
-
 
 if partner == 'NekoTech':
     status=["Canceled","Canceled Reversal", "Pending"]
@@ -316,29 +320,27 @@ if partner == 'Healthy World Lifestyle Sdn Bhd (Ogawa)':
 
     data1=matching(data1)
 
-    column_df='Item No.'
-    sheet='Ogawa SKU Mar24'
-    column_formula='Log'
-    data1 = formula_match(data1, column_df, sheet, column_formula)
+    column_df1='Item No.'
+    sheet1='Ogawa SKU Mar24'
+    column_formula1='Log'
+    data1 = formula_match(data1, column_df1, sheet1, column_formula1)
     total=data1[37].sum()
     st.write("Handling: RM", total)
+    "#"
 
     cancel_status=['Returned']
     data2=data[data['Order Status'].isin(cancel_status)]
 
-    column_df='Model'
-    sheet='Ogawa SKU Mar24'
-    column_formula='Log'
-    data2 = formula_match(data2, column_df, sheet, column_formula)
-    #total=data2[37].sum()
-    #st.write("Handling: RM", total)
-    data2['return_rm'] = data2[37].map({2.5: 3, 4: 8, 7: 10})
+    column_df2='Model'
+    sheet2='Ogawa SKU Mar24'
+    column_formula2='Log'
+    data2.reset_index(inplace=True)
+    data2  = data2.drop(['index'], axis=1)
+    data2 = formula_match(data2, column_df2, sheet2, column_formula2)
+    data2['return_rm'] = data2[52].map({2.5: 3, 4: 8, 7: 10})
     total_return=data2['return_rm'].sum()
     st.write("Return: RM", total_return)
 
-    name="Return"
-    column='Order ID'
-    rows1=on_demand(data2, name, column)
 
 if partner == 'Leapro Fashion':
     status=["Canceled","Canceled Reversal", "Refunded", "Returned", "Pending"]
