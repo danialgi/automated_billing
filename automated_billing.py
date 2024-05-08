@@ -312,20 +312,33 @@ if partner == 'Healthy Passion Wellnes Sdn Bhd (Marna)':
 
 if partner == 'Healthy World Lifestyle Sdn Bhd (Ogawa)':
     status=[]
-    data = exclude_status(False, data, status)
+    data1 = exclude_status(False, data, status)
 
-    data=matching(data)
+    data1=matching(data1)
 
     column_df='Item No.'
     sheet='Ogawa SKU Mar24'
     column_formula='Log'
-    data = formula_match(data, column_df, sheet, column_formula)
-    total=data[37].sum()
+    data1 = formula_match(data1, column_df, sheet, column_formula)
+    total=data1[37].sum()
     st.write("Handling: RM", total)
 
-    #data['return_rm'] = data[37].map({2.5: 3, 4: 8, 7: 10})
-    #total_return=data['return_rm'].sum()
-    #st.write("Return: RM", total_return)
+    cancel_status=['Returned']
+    data2=data[data['Order Status'].isin(cancel_status)]
+
+    column_df='Model'
+    sheet='Ogawa SKU Mar24'
+    column_formula='Log'
+    data2 = formula_match(data2, column_df, sheet, column_formula)
+    #total=data2[37].sum()
+    #st.write("Handling: RM", total)
+    data2['return_rm'] = data2[37].map({2.5: 3, 4: 8, 7: 10})
+    total_return=data2['return_rm'].sum()
+    st.write("Return: RM", total_return)
+
+    name="Return"
+    column='Order ID'
+    rows1=on_demand(data2, name, column)
 
 if partner == 'Leapro Fashion':
     status=["Canceled","Canceled Reversal", "Refunded", "Returned", "Pending"]
@@ -423,17 +436,19 @@ if partner == 'Grow Beyond Consulting Sdn Bhd':
 
 if partner == 'Dou Dou Trading':
     status=[]
-    data = exclude_status(False, data, status)
+    data1 = exclude_status(False, data, status)
 
-    data = matching(data)
-
-    #cancel_status=['Returned']
-    #data2=data[data['Order Status'].isin(cancel_status)]
-    #data = matching(data)
+    data1= matching(data1)
 
     order_column='Order No.'
     weight_column='Order Qty'
-    cal_weight(data, order_column, weight_column)
+    cal_weight(data1, order_column, weight_column)
+
+    cancel_status=['Returned']
+    data2=data[data['Order Status'].isin(cancel_status)]
+    name="Return"
+    column='Order ID'
+    rows1=on_demand(data2, name, column)
 
 if partner == 'Jacko Agriculture Resources Sdn. Bhd.':
     status=[]
