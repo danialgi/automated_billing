@@ -339,7 +339,6 @@ if partner == 'Healthy World Lifestyle Sdn Bhd (Ogawa)':
     data2.reset_index(inplace=True)
     data2  = data2.drop(['index'], axis=1)
     data2 = formula_match(data2, column_df2, sheet2, column_formula2)
-    data2
     data2['return_rm'] = data2[29].map({2.5: 3, 4: 8, 7: 10})
     total_return=data2['return_rm'].sum()
     st.write("Return: RM", total_return)
