@@ -66,7 +66,6 @@ def oc_data():
     df_cart = df_cart.drop([0, 1, 2, 3])
     df_cart.columns = df_cart.iloc[0]
     df_cart = df_cart[1:]
-    df_cart
     df_cart = df_cart[df_cart['Delivery Method'] == "By BRP Warehouse"]
     df_cart = df_cart.ffill()
     st.markdown("##")
@@ -93,7 +92,6 @@ def matching(df_cart):
         df_wms = pd.read_csv(wms_file)
 
     df_wms = df_wms[df_wms['Status'] == "COMPLETED"]
-    df_wms
 
     order_id = df_cart [['Order ID']].copy()
     #order_id = pd.concat([df_cart['Order ID'], df_wms['Order No.']])
@@ -112,7 +110,6 @@ def matching(df_cart):
     df_wms_i = pd.concat(df_wms_i)
     df_wms_i = df_wms_i.reset_index()
     df_wms_i = df_wms_i.drop(['level_0', 'level_1'], axis=1)
-    st.write("WMS Matched: ", df_wms_i)
     st.markdown("__________________________________________________________________________")
     return df_wms_i
 
@@ -157,10 +154,15 @@ def formula_match(df, column_df, sheet, column_formula):
     df_formula_i  = df_formula_i .drop(['level_0','level_1'], axis=1)
 
     df_concat= pd.concat([df, df_formula_i], axis=1, ignore_index=True)
+    df_concat_columns = df_concat.shape[1]
 
-    df_empty = df_concat[df_concat[36].isnull()]
-    df_empty  = df_empty [[16,17]].copy()
-    df_empty.rename(columns={16: 'Item Code', 17: 'Item Name'}, inplace=True)
+    df_empty = df_concat[df_concat[df_concat_columns-1].isnull()]
+    if column_df == 'Model':
+        df_empty  = df_empty [[23,24]].copy()
+        df_empty.rename(columns={23: 'Item Code', 24: 'Item Name'}, inplace=True)
+    else:
+        df_empty  = df_empty [[16,17]].copy()
+        df_empty.rename(columns={16: 'Item Code', 17: 'Item Name'}, inplace=True)
     df_empty = df_empty.drop_duplicates(keep='first')
     st.write("*MISSING FORMULA*", df_empty)
     st.markdown("##")
