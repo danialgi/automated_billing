@@ -31,7 +31,7 @@ partner_option=['Zucca',
     'Paseo',
     'Galaxy Sports',
     'NekoTech',
-    #'Asia Century Supplies Sdn Bhd',
+    'Asia Century Supplies Sdn Bhd',
     'CMC Plus Plt',
     'CommBax Sdn Bhd',
     'Healthy Passion Wellnes Sdn Bhd (Marna)',
@@ -81,15 +81,13 @@ def exclude_status(exclude, df, status):
     return df
 
 def matching(df_cart):
-    file_type=['xls','csv']
-    select_file_type=st.selectbox("File type", file_type)
-    if select_file_type == 'xls':
+    if partner == 'Is Distributions Sdn Bhd' or partner == 'Grow Beyond Consulting Sdn Bhd':
+        wms_file = st.file_uploader("WMS file",type=['csv'])
+        df_wms = pd.read_csv(wms_file)
+    else:
         wms_file = st.file_uploader("WMS file",type=['xls'])
         df_wms = pd.read_html(wms_file)
         df_wms = df_wms[0]
-    if select_file_type == 'csv':
-        wms_file = st.file_uploader("WMS file",type=['csv'])
-        df_wms = pd.read_csv(wms_file)
 
     df_wms = df_wms[df_wms['Status'] == "COMPLETED"]
 
@@ -154,9 +152,9 @@ def formula_match(df, column_df, sheet, column_formula):
     df_formula_i  = df_formula_i .drop(['level_0','level_1'], axis=1)
 
     df_concat= pd.concat([df, df_formula_i], axis=1, ignore_index=True)
-    df_concat_columns = df_concat.shape[1]
+    df_columns = df.shape[1]
 
-    df_empty = df_concat[df_concat[df_concat_columns-1].isnull()]
+    df_empty = df_concat[df_concat[df_columns+1].isnull()]
     if column_df == 'Model':
         df_empty  = df_empty [[6,7]].copy()
         df_empty.rename(columns={6: 'Item Name', 7: 'Item Code'}, inplace=True)
@@ -463,3 +461,28 @@ if partner == 'Jacko Agriculture Resources Sdn. Bhd.':
     order_column='Order No.'
     weight_column='Order Qty'
     cal_weight(data, order_column, weight_column)
+
+if partner == 'Asia Century Supplies Sdn Bhd':
+    status=[]
+    data = exclude_status(False, data, status)
+
+    data = matching(data)
+
+    column_df = 'Item No.'
+    sheet = 'ACS SKU'
+    column_formula = 'Log'
+    data = formula_match(data, column_df, sheet, column_formula)
+    data['Total']=data[21]*data[37]
+
+    'Accessories'
+    accessories = data[data[39] == 'Accesories']
+    column='Total'
+    percent=4
+    total1=revenue(accessories, column, percent)
+    '#'
+
+    'Consumables'
+    consumables = data[data[39] == 'Consumables']
+    column='Total'
+    percent=0.5
+    total2=revenue(consumables, column, percent)
